@@ -48,7 +48,7 @@ def cas_login(sid: str, password: str) -> list[dict]:
         # Fill the CAS login form
         page.fill('input[name="username"]', sid)
         page.fill('input[name="password"]', password)
-        page.click('button[type="submit"], input[type="submit"], .login-btn, button:has-text("登录")')
+        page.click('input[type="submit"], button[type="submit"]:visible')
 
         # Wait for redirect back to Blackboard
         try:
