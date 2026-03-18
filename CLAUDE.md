@@ -1,6 +1,28 @@
 # sustech blackboard CLI
 
-This is a CLI tool to help SUSTech Students/their agents to use Blackboard easier.
+CLI tool (`bb`) for SUSTech students and their agents to interact with Blackboard LMS via its REST API.
+
+## Architecture
+
+```
+src/bb_cli/
+├── cli.py               # Click group entry point, --json flag
+├── auth.py              # CAS SSO login (Playwright headless), cookie persistence (~/.bb-cli/cookies.json)
+├── client.py            # httpx wrapper: GET, paginated GET, file download, 401 re-auth
+├── config.py            # Constants: BB URLs, cookie path
+├── formatting.py        # Rich tables / JSON output helpers
+└── commands/
+    ├── login.py          # bb login — force CAS login, show user info
+    ├── courses.py        # bb courses [--term] — enrolled courses
+    ├── announcements.py  # bb announcements [--course ID]
+    ├── contents.py       # bb contents COURSE_ID [--folder ID]
+    ├── download.py       # bb download COURSE_ID CONTENT_ID [-o DIR]
+    └── grades.py         # bb grades COURSE_ID
+```
+
+**Auth flow**: `ensure_authenticated()` → load cookies → validate via `/users/me` → if expired: prompt creds (or `BB_SID`/`BB_PASSWORD` env vars) → Playwright headless CAS login → save cookies.
+
+**Data flow**: Commands call `ensure_authenticated()` → build `BBClient(cookies)` → call BB REST API → format with Rich or `--json`.
 
 ---
 
