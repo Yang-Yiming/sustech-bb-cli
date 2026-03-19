@@ -6,6 +6,8 @@ from bb_cli.commands.announcements import announcements
 from bb_cli.commands.contents import ls
 from bb_cli.commands.download import download
 from bb_cli.commands.grades import grades
+from bb_cli.commands.nav import cd, pwd
+from bb_cli.commands.show import show
 
 
 @click.group()
@@ -24,3 +26,6 @@ cli.add_command(ls)
 cli.add_command(ls, name="contents")  # backward-compat alias
 cli.add_command(download)
 cli.add_command(grades)
+cli.add_command(cd)
+cli.add_command(pwd)
+cli.add_command(show)

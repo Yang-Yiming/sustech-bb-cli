@@ -8,3 +8,4 @@ CAS_LOGIN_URL = f"https://{BB_DOMAIN}/webapps/bb-sso-BBLEARN/index.jsp"
 
 CONFIG_DIR = Path.home() / ".bb-cli"
 COOKIE_FILE = CONFIG_DIR / "cookies.json"
+CONTEXT_FILE = CONFIG_DIR / "context.json"

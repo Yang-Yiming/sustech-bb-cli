@@ -2,28 +2,19 @@ import click
 
 from bb_cli.auth import ensure_authenticated
 from bb_cli.client import BBClient
+from bb_cli.context import require_course
 from bb_cli.formatting import output_table
 
 
-@click.command()
-@click.argument("course_id")
-@click.pass_context
-def grades(ctx, course_id):
-    """Show grades for a course."""
-    cookies = ensure_authenticated()
-    client = BBClient(cookies)
-
-    # Get current user
+def fetch_grades(client: BBClient, course_id: str) -> list[dict]:
+    """Fetch grades for a course. Reusable helper."""
     user = client.get("/users/me")
     user_id = user["id"]
 
-    # Get grade columns
     columns = client.get_paginated(f"/courses/{course_id}/gradebook/columns")
     if not columns:
-        click.echo("No grade columns found.")
-        return
+        return []
 
-    # Fetch the user's grade for each column
     grade_rows = []
     for col in columns:
         col_id = col["id"]
@@ -40,6 +31,30 @@ def grades(ctx, course_id):
             "text": grade.get("text", ""),
             "notes": grade.get("notes", ""),
         })
+
+    return grade_rows
+
+
+@click.command()
+@click.argument("course_id", default=None, required=False)
+@click.pass_context
+def grades(ctx, course_id):
+    """Show grades for a course.
+
+    Uses the current course context if COURSE_ID is not provided.
+    """
+    if course_id is None:
+        nav_ctx = require_course()
+        course_id = nav_ctx["course_id"]
+
+    cookies = ensure_authenticated()
+    client = BBClient(cookies)
+
+    grade_rows = fetch_grades(client, course_id)
+
+    if not grade_rows:
+        click.echo("No grade columns found.")
+        return
 
     output_table(
         grade_rows,

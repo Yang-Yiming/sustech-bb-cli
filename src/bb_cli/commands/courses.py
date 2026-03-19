@@ -5,22 +5,13 @@ from bb_cli.client import BBClient
 from bb_cli.formatting import output_table
 
 
-@click.command()
-@click.option("--term", default=None, help="Filter by term name (substring match).")
-@click.pass_context
-def courses(ctx, term):
-    """List enrolled courses."""
-    cookies = ensure_authenticated()
-    client = BBClient(cookies)
-
-    # Get current user
+def fetch_courses(client: BBClient, term: str | None = None) -> list[dict]:
+    """Fetch enrolled courses, optionally filtered by term. Reusable helper."""
     user = client.get("/users/me")
     user_id = user["id"]
 
-    # Get course memberships
     memberships = client.get_paginated(f"/users/{user_id}/courses")
 
-    # Fetch course details for each membership
     course_list = []
     for m in memberships:
         course_id = m.get("courseId")
@@ -33,13 +24,25 @@ def courses(ctx, term):
         course["_role"] = m.get("courseRoleId", "")
         course_list.append(course)
 
-    # Filter by term if requested
     if term:
         course_list = [
             c for c in course_list
             if term.lower() in (c.get("termId") or "").lower()
             or term.lower() in (c.get("name") or "").lower()
         ]
+
+    return course_list
+
+
+@click.command()
+@click.option("--term", default=None, help="Filter by term name (substring match).")
+@click.pass_context
+def courses(ctx, term):
+    """List enrolled courses."""
+    cookies = ensure_authenticated()
+    client = BBClient(cookies)
+
+    course_list = fetch_courses(client, term)
 
     if not course_list:
         click.echo("No courses found.")
