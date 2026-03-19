@@ -3,7 +3,7 @@ import click
 from bb_cli.commands.login import login
 from bb_cli.commands.courses import courses
 from bb_cli.commands.announcements import announcements
-from bb_cli.commands.contents import contents
+from bb_cli.commands.contents import ls
 from bb_cli.commands.download import download
 from bb_cli.commands.grades import grades
 
@@ -20,6 +20,7 @@ def cli(ctx, json_flag):
 cli.add_command(login)
 cli.add_command(courses)
 cli.add_command(announcements)
-cli.add_command(contents)
+cli.add_command(ls)
+cli.add_command(ls, name="contents")  # backward-compat alias
 cli.add_command(download)
 cli.add_command(grades)
