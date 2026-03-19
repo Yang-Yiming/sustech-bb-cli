@@ -9,20 +9,25 @@ src/bb_cli/
 ├── cli.py               # Click group entry point, --json flag
 ├── auth.py              # CAS SSO login (Playwright headless), cookie persistence (~/.bb-cli/cookies.json)
 ├── client.py            # httpx wrapper: GET, paginated GET, file download, 401 re-auth
-├── config.py            # Constants: BB URLs, cookie path
+├── config.py            # Constants: BB URLs, cookie/context paths
+├── context.py           # Stateful navigation context (~/.bb-cli/context.json)
 ├── formatting.py        # Rich tables / JSON output helpers
 └── commands/
     ├── login.py          # bb login — force CAS login, show user info
-    ├── courses.py        # bb courses [--term] — enrolled courses
-    ├── announcements.py  # bb announcements [--course ID]
-    ├── contents.py       # bb contents COURSE_ID [--folder ID]
-    ├── download.py       # bb download COURSE_ID CONTENT_ID [-o DIR]
-    └── grades.py         # bb grades COURSE_ID
+    ├── courses.py        # bb courses [--term] — enrolled courses, fetch_courses() helper
+    ├── announcements.py  # bb announcements [--course ID] — fetch_announcements() helper
+    ├── contents.py       # bb ls [COURSE_ID] [PATH] — context-aware listing
+    ├── nav.py            # bb cd [TARGET], bb pwd — stateful navigation
+    ├── show.py           # bb show <target|grades|announcements> — unified viewer
+    ├── download.py       # bb download TARGET [-o DIR] — context-aware download
+    └── grades.py         # bb grades [COURSE_ID] — fetch_grades() helper
 ```
 
 **Auth flow**: `ensure_authenticated()` → load cookies → validate via `/users/me` → if expired: prompt creds (or `BB_SID`/`BB_PASSWORD` env vars) → Playwright headless CAS login → save cookies.
 
 **Data flow**: Commands call `ensure_authenticated()` → build `BBClient(cookies)` → call BB REST API → format with Rich or `--json`.
+
+**Navigation state**: `context.py` manages `~/.bb-cli/context.json` — stores current course, folder path, and cached `last_ls` items. Enables `cd`/`ls`/`pwd` workflow so agents and humans don't repeat opaque IDs.
 
 ---
 
