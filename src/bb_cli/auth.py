@@ -3,6 +3,7 @@ from __future__ import annotations
 import json as _json
 import os
 import stat
+import sys
 from pathlib import Path
 
 import click
@@ -25,7 +26,8 @@ def save_cookies(cookies: list[dict]) -> None:
     """Persist cookies to disk with restricted permissions."""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     COOKIE_FILE.write_text(_json.dumps(cookies, indent=2))
-    COOKIE_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+    if sys.platform != "win32":
+        COOKIE_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0o600
 
 
 def get_credentials() -> tuple[str, str]:

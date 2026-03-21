@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import click
@@ -6,6 +7,11 @@ from rich.progress import Progress
 from bb_cli.auth import ensure_authenticated
 from bb_cli.client import BBClient
 from bb_cli.context import load_context, require_course, resolve_ref
+
+
+def _sanitize_filename(name: str) -> str:
+    """Remove characters that are invalid in Windows filenames."""
+    return re.sub(r'[<>:"|?*]', "_", name)
 
 
 @click.command()
@@ -61,7 +67,7 @@ def download(ctx, target, course_id, output_dir):
     with Progress() as progress:
         task = progress.add_task("Downloading...", total=len(attachments))
         for att in attachments:
-            filename = att.get("fileName", "unknown")
+            filename = _sanitize_filename(att.get("fileName", "unknown"))
             att_id = att["id"]
             url = f"/courses/{course_id}/contents/{content_id}/attachments/{att_id}/download"
             dest = dest_dir / filename
